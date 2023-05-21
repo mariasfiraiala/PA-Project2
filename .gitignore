@@ -1,0 +1,8 @@
+/check
+/CPPLINT.cfg
+/public_tests
+/README.checker.md
+/_utils
+/cpp.errors
+/java.errors
+/Makefile.PA
