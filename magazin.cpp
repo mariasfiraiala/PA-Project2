@@ -26,7 +26,7 @@ void dfs(int node) {
     }
 }
 
-void task(vector<int> adj[], int q, int n) {
+void task(int q) {
     nodesSubTree = vector<int>(NMAX);
     visited = vector<bool>(NMAX, false);
     traversal = vector<int>();
@@ -54,7 +54,7 @@ int main() {
         adj[x].push_back(i);
     }
 
-    task(adj, q, n);
+    task(q);
 
     return 0;
 }
