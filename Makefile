@@ -1,5 +1,5 @@
 CC = g++
-CCFLAGS = -Wall -Wextra -std=c++17 -O0 -lm
+CCFLAGS = -Wall -Wextra -std=c++17 -O0 -lm -g
 
 .PHONY: build clean
 
