@@ -7,47 +7,88 @@ using namespace std;
 ifstream fin("ferate.in");
 ofstream fout("ferate.out");
 vector<int> adj[NMAX];
-bool visited[NMAX];
-bool reachable[NMAX];
+vector<int> parent;
+vector<int> found;
+vector<int> low_link;
+stack<int> nodes_stack;
+vector<bool> in_stack;
+vector<int> which_scc;
+vector<int> in_scc;
 
-void dfs1(int node) {
-    reachable[node] = true;
-    for (auto neigh : adj[node])
-        if (!reachable[neigh])
-            dfs1(neigh);
+void dfs(int node, int& timestamp, vector<vector<int>>& all_sccs) {
+    found[node] = ++timestamp;
+    low_link[node] = found[node];
+    nodes_stack.push(node);
+    in_stack[node] = true;
+
+    for (auto neigh : adj[node]) {
+        if (parent[neigh] != -1) {
+            if (in_stack[neigh]) {
+                    low_link[node] = min(low_link[node], found[neigh]);
+            }
+            continue;
+        }
+
+        parent[neigh] = node;
+        dfs(neigh, timestamp, all_sccs);
+        low_link[node] = min(low_link[node], low_link[neigh]);
+    }
+
+    if (low_link[node] == found[node]) {
+        vector<int> scc;
+        do {
+            auto x = nodes_stack.top();
+            nodes_stack.pop();
+            in_stack[x] = false;
+
+            scc.push_back(x);
+        } while (scc.back() != node);
+
+        all_sccs.push_back(scc);
+    }
 }
 
-void dfs2(int node, int *unreachable) {
-    visited[node] = true;
-    ++(*unreachable);
-    for (auto neigh : adj[node])
-        if (!visited[neigh] && !reachable[neigh])
-            dfs2(neigh, unreachable);
-}
+vector<vector<int>> tarjan_scc(int n) {
+    parent = vector<int>(n + 1, -1);
+    found = vector<int>(n + 1, -1);
+    low_link = vector<int>(n + 1, -1);
+    in_stack = vector<bool>(n + 1, false);
 
-int minEdges(int s, int n) {
-    dfs1(s);
-    vector<pair<int, int> > val;
-
+    vector<vector<int>> all_sccs;
+    int timestamp = 0;
     for (int node = 1; node <= n; ++node) {
-        if (!reachable[node]) {
-            int unreachable = 0;
-            memset(visited, false, sizeof(visited));
+        if (parent[node] == -1) {
+            parent[node] = node;
 
-            dfs2(node, &unreachable);
-            val.push_back(make_pair(unreachable, node));
+            dfs(node, timestamp, all_sccs);
         }
     }
 
-    sort(val.begin(), val.end(), greater<pair<int, int>>());
+    return all_sccs;
+}
+
+int task(int n, int s) {
+    vector<vector<int>> sccs = tarjan_scc(n);
+
+    which_scc = vector<int>(n + 1);
+    for (int i = 0; i < sccs.size(); ++i) {
+        for (auto node : sccs[i]) {
+            which_scc[node] = i;
+        }
+    }
+
+    in_scc = vector<int>(sccs.size() + 1, 0);
+    for (int src = 1; src <= n; ++src)
+        for (auto dest : adj[src])
+            if (which_scc[src] != which_scc[dest])
+                ++in_scc[which_scc[dest]];
+
+    in_scc[which_scc[s]] = 1;
 
     int ans = 0;
-    for (auto it : val) {
-        if (!reachable[it.second]) {
+    for (int i = 0; i < sccs.size(); ++i)
+        if (!in_scc[i])
             ++ans;
-            dfs1(it.second);
-        }
-    }
 
     return ans;
 }
@@ -62,7 +103,7 @@ int main() {
         adj[x].push_back(y);
     }
 
-    fout << minEdges(s, n);
+    fout << task(n, s);
 
     return 0;
 }
