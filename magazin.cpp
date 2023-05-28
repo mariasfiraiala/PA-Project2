@@ -2,7 +2,7 @@
 
 using namespace std;
 
-#define NMAX (int)1e5 + 5
+#define NMAX (int)1e5 + 1
 
 ifstream fin("magazin.in");
 ofstream fout("magazin.out");
@@ -13,14 +13,25 @@ vector<int> traversal;
 map<int, int> pos;
 
 void dfs(int node) {
+    /**
+     * Count the number of the nodes in the current subtree;
+     * ignore the parent node
+     */
     nodesSubTree[node] = 0;
     visited[node] = true;
+    /* Save the node in the traversal array */
     traversal.push_back(node);
+    /* Save the position of the node in the traversal array */
     pos[node] = traversal.size() - 1;
 
     for (auto &neigh : adj[node]) {
         if (!visited[neigh]) {
             dfs(neigh);
+
+            /**
+             * Add number of nodes in children subtrees
+             * to the parent nodesSubTree value
+             */
             nodesSubTree[node] += 1 + nodesSubTree[neigh];
         }
     }
@@ -37,7 +48,9 @@ void task(int q) {
     for (int i = 0; i < q; ++i) {
         fin >> d >> e;
 
+        /* If there are plenty of nodes in the requested subtree */
         if (nodesSubTree[d] >= e)
+            /* Print the value from the traversal array */
             fout << traversal[pos[d] + e] << "\n";
         else
             fout << -1 << "\n";
